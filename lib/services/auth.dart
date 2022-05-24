@@ -9,7 +9,7 @@ import 'package:messenger/views/home.dart';
 class AuthMethods {
   final FirebaseAuth auth = FirebaseAuth.instance;
 
-  getCurrentUser() {
+  Future getCurrentUser() async {
     return auth.currentUser;
   }
 

@@ -3,11 +3,12 @@ import 'package:flutter/material.dart';
 import 'package:messenger/views/home.dart';
 
 import 'package:messenger/views/sign_in.dart';
+import 'package:messenger/services/auth.dart';
 
 void main() async {
   /* Initialize our application with firebase. */
   WidgetsFlutterBinding.ensureInitialized();
-  Firebase.initializeApp();
+  await Firebase.initializeApp();
   runApp(
     MaterialApp(
       title: 'Flutter Demo',
@@ -15,7 +16,16 @@ void main() async {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: const SignInScreen(),
+      home: FutureBuilder(
+        future: AuthMethods().getCurrentUser(),
+        builder: (BuildContext context, AsyncSnapshot snapshot) {
+          if(snapshot.hasData) {
+            return const HomeScreen();
+          } else {
+            return const SignInScreen();
+          }
+        },
+      ),
       routes: {
         HomeScreen.routeName: (context) => const HomeScreen(),
       },
