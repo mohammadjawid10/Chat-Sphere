@@ -28,6 +28,7 @@ void main() async {
       ),
       routes: {
         HomeScreen.routeName: (context) => const HomeScreen(),
+        SignInScreen.routeName: (context) => const SignInScreen(),
       },
     ),
   );

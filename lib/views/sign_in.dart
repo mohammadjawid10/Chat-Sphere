@@ -4,6 +4,8 @@ import 'package:messenger/services/auth.dart';
 class SignInScreen extends StatefulWidget {
   const SignInScreen({Key? key}) : super(key: key);
 
+  static const routeName = '/sign_in';
+
   @override
   State<SignInScreen> createState() => _SignInScreenState();
 }

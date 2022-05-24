@@ -5,6 +5,7 @@ import 'package:google_sign_in/google_sign_in.dart';
 import 'package:messenger/helper/shared_prefs_helper.dart';
 import 'package:messenger/services/database.dart';
 import 'package:messenger/views/home.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class AuthMethods {
   final FirebaseAuth auth = FirebaseAuth.instance;
@@ -12,6 +13,13 @@ class AuthMethods {
   Future getCurrentUser() async {
     return auth.currentUser;
   }
+
+  Future signOut(BuildContext context) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    prefs.clear();
+    await auth.signOut();
+  }
+
 
   signInWithGoogle(BuildContext context) async {
     final FirebaseAuth _firebaseAuth = FirebaseAuth.instance;
