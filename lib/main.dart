@@ -19,7 +19,7 @@ void main() async {
       home: FutureBuilder(
         future: AuthMethods().getCurrentUser(),
         builder: (BuildContext context, AsyncSnapshot snapshot) {
-          if(snapshot.hasData) {
+          if (snapshot.hasData) {
             return const HomeScreen();
           } else {
             return const SignInScreen();
