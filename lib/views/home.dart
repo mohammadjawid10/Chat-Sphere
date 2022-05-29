@@ -1,9 +1,12 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 import 'package:messenger/services/auth.dart';
+import 'package:messenger/views/sign_in.dart';
 import 'package:messenger/services/database.dart';
 import 'package:messenger/views/chat_screen.dart';
-import 'package:messenger/views/sign_in.dart';
+import 'package:messenger/helper/shared_prefs_helper.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -16,13 +19,41 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   bool isSearching = false;
+
+  String? myName;
+  String? myProfilePic;
+  String? myUserName;
+  String? myEmail;
+
   Stream? usersStream;
 
   late final TextEditingController searchUserController;
 
+  getMyInfoFromSharedPreferences() async {
+    myName = await SharedPreferencesHelper().getDisplayName();
+    myEmail = await SharedPreferencesHelper().getUserEmail();
+    myUserName = await SharedPreferencesHelper().getUserName();
+    myProfilePic = await SharedPreferencesHelper().getUserProfileUrl();
+  }
+
+  loadOnLaunch() async {
+    await getMyInfoFromSharedPreferences();
+  }
+
+  getChatRoomIdByUserNames(String me, String you) {
+    if (me.substring(0, 1).codeUnitAt(0) > you.substring(0, 1).codeUnitAt(0)) {
+      // ignore: unnecessary_string_escapes
+      return '$me\_$you';
+    } else {
+      // ignore: unnecessary_string_escapes
+      return '$you\_$me';
+    }
+  }
+
   @override
   void initState() {
     searchUserController = TextEditingController();
+    loadOnLaunch();
     super.initState();
   }
 
@@ -66,6 +97,14 @@ class _HomeScreenState extends State<HomeScreen> {
       {required String profileUrl, name, email, username}) {
     return ListTile(
       onTap: () {
+        var chatRoomId = getChatRoomIdByUserNames(myUserName!, username);
+
+        Map<String, dynamic> chatRoomInfoMap = {
+          'users': [myUserName, username],
+        };
+
+        DatabaseMethods().createChatRoom(chatRoomId, chatRoomInfoMap);
+
         Navigator.of(context).push(
           MaterialPageRoute(
             builder: (context) => ChatScreen(

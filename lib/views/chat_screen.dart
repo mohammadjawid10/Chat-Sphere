@@ -1,5 +1,8 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:messenger/helper/shared_prefs_helper.dart';
+import 'package:messenger/services/database.dart';
+import 'package:random_string/random_string.dart';
 
 class ChatScreen extends StatefulWidget {
   const ChatScreen({
@@ -18,6 +21,10 @@ class ChatScreen extends StatefulWidget {
 }
 
 class _ChatScreenState extends State<ChatScreen> {
+  late final TextEditingController _messageController;
+
+  Stream? messageStream;
+
   late String chatRoomId;
   String messageId = '';
   String? myName;
@@ -44,11 +51,145 @@ class _ChatScreenState extends State<ChatScreen> {
     }
   }
 
+  Widget messageTile(String message) {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+      decoration: BoxDecoration(
+        color: const Color(0xffF1F1F1),
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: Text(message),
+    );
+  }
+
+  Widget chatMessages() {
+    return StreamBuilder(
+      stream: messageStream,
+      builder: (cotext, AsyncSnapshot snapshot) {
+        if (snapshot.hasData) {
+          return ListView.builder(
+            itemCount: snapshot.data.docs.length,
+            itemBuilder: (context, index) {
+              DocumentSnapshot ds = snapshot.data.docs[index];
+              return messageTile(ds['message']);
+            },
+          );
+        } else {
+          return const Center(
+            child: CircularProgressIndicator(),
+          );
+        }
+      },
+    );
+  }
+
+  getAndSetMessages() async {
+    messageStream = await DatabaseMethods().getChatRoomMessages(chatRoomId);
+    setState(() {});
+  }
+
+  addMessage(bool sendClicked) {
+    if (_messageController.text.isNotEmpty) {
+      String message = _messageController.text;
+
+      var lastMessageTs = DateTime.now();
+
+      Map<String, dynamic> messageInfoMap = {
+        'message': message,
+        'sender': myUserName,
+        'timestamp': lastMessageTs,
+        'imageUrl': myProfilePic,
+      };
+
+      // let's generate a message id
+      if (messageId == '') {
+        messageId = randomAlphaNumeric(12);
+      }
+
+      if (sendClicked) {
+        // if you have clicked the send method then clean the text field
+        _messageController.text = '';
+
+        // reset message id to get regenerated on the next message
+        messageId = '';
+      }
+
+      DatabaseMethods()
+          .addMessage(chatRoomId, messageId, messageInfoMap)
+          .then((value) {
+        Map<String, dynamic> lastMessageInfoMap = {
+          'lastMessage': message,
+          'lastMessageSendTs': lastMessageTs,
+          'lastMessageSender': myUserName,
+        };
+
+        DatabaseMethods().updateLastMessageSend(chatRoomId, lastMessageInfoMap);
+      });
+    }
+  }
+
+  doThisOnLaunch() async {
+    await getMyInfoFromSharedPreferences();
+    getAndSetMessages();
+  }
+
+  @override
+  void initState() {
+    doThisOnLaunch();
+    _messageController = TextEditingController();
+    super.initState();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: AppBar(
         title: Text(widget.name),
+      ),
+      body: Container(
+        child: Stack(
+          children: [
+            chatMessages(),
+            Container(
+              alignment: Alignment.bottomCenter,
+              child: Container(
+                margin:
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade200,
+                  borderRadius: BorderRadius.circular(25),
+                ),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: TextField(
+                        controller: _messageController,
+                        decoration: const InputDecoration(
+                          border: InputBorder.none,
+                          hintText: 'Type your message',
+                        ),
+                        onChanged: (value) {
+                          addMessage(false);
+                        },
+                      ),
+                    ),
+                    GestureDetector(
+                      onTap: () {
+                        addMessage(true);
+                      },
+                      child: const Icon(
+                        Icons.send,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
