@@ -1,8 +1,8 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:messenger/constants/colors.dart';
 import 'package:messenger/helper/shared_prefs_helper.dart';
 import 'package:messenger/services/database.dart';
+import 'package:messenger/widgets/chat_messages.dart';
+import 'package:messenger/widgets/search_user_list_tile.dart';
 import 'package:random_string/random_string.dart';
 
 class ChatScreen extends StatefulWidget {
@@ -24,9 +24,8 @@ class ChatScreen extends StatefulWidget {
 class _ChatScreenState extends State<ChatScreen> {
   late final TextEditingController _messageController;
 
-  Stream? messageStream;
-
   late String chatRoomId;
+
   String messageId = '';
   String? myName;
   String? myProfilePic;
@@ -40,73 +39,6 @@ class _ChatScreenState extends State<ChatScreen> {
     myProfilePic = await SharedPreferencesHelper().getUserProfileUrl();
 
     chatRoomId = getChatRoomIdByUserNames(myUserName!, widget.username);
-  }
-
-  getChatRoomIdByUserNames(String me, String you) {
-    if (me.substring(0, 1).codeUnitAt(0) > you.substring(0, 1).codeUnitAt(0)) {
-      // ignore: unnecessary_string_escapes
-      return '$me\_$you';
-    } else {
-      // ignore: unnecessary_string_escapes
-      return '$you\_$me';
-    }
-  }
-
-  Widget messageTile(String message, bool sendByMe) {
-    return Row(
-      mainAxisAlignment: sendByMe ? MainAxisAlignment.end : MainAxisAlignment.start,
-      children: [
-        Flexible(
-          child: Container(
-            margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-            decoration: BoxDecoration(
-              color: sendByMe ? messageBlueColor : messageGrayColor,
-              borderRadius: BorderRadius.only(
-                topLeft: sendByMe ? const Radius.circular(15) : Radius.zero,
-                topRight: sendByMe ? Radius.zero : const Radius.circular(15),
-                bottomLeft: const Radius.circular(15),
-                bottomRight: const Radius.circular(15),
-              )
-            ),
-            child: Text(
-              message,
-              style: const TextStyle(
-                color: Colors.white,
-              ),
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget chatMessages() {
-    return StreamBuilder(
-      stream: messageStream,
-      builder: (cotext, AsyncSnapshot snapshot) {
-        if (snapshot.hasData) {
-          return ListView.builder(
-            reverse: true,
-            padding: const EdgeInsets.only(bottom: 70, top: 15),
-            itemCount: snapshot.data.docs.length,
-            itemBuilder: (context, index) {
-              DocumentSnapshot ds = snapshot.data.docs[index];
-              return messageTile(ds['message'], myUserName == ds['sender']);
-            },
-          );
-        } else {
-          return const Center(
-            child: CircularProgressIndicator(),
-          );
-        }
-      },
-    );
-  }
-
-  getAndSetMessages() async {
-    messageStream = await DatabaseMethods().getChatRoomMessages(chatRoomId);
-    setState(() {});
   }
 
   addMessage(bool sendClicked) {
@@ -149,14 +81,8 @@ class _ChatScreenState extends State<ChatScreen> {
     }
   }
 
-  doThisOnLaunch() async {
-    await getMyInfoFromSharedPreferences();
-    getAndSetMessages();
-  }
-
   @override
   void initState() {
-    doThisOnLaunch();
     _messageController = TextEditingController();
     super.initState();
   }
@@ -170,12 +96,14 @@ class _ChatScreenState extends State<ChatScreen> {
       ),
       body: Stack(
         children: [
-          chatMessages(),
+          ChatMessages(
+            messageController: _messageController,
+            username: widget.username,
+          ),
           Container(
             alignment: Alignment.bottomCenter,
             child: Container(
-              margin:
-                  const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+              margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
               padding: const EdgeInsets.symmetric(horizontal: 16),
               decoration: BoxDecoration(
                 color: Colors.grey.shade200,

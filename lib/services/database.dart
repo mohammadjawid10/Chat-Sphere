@@ -50,10 +50,12 @@ class DatabaseMethods {
       return true;
     } else {
       // chatroom doesn't exist, so let's create it
-      return FirebaseFirestore.instance
+      if(chatRoomId.isNotEmpty) {
+        return FirebaseFirestore.instance
           .collection('chatrooms')
           .doc(chatRoomId)
           .set(chatRoomInfoMap);
+      }
     }
   }
 
