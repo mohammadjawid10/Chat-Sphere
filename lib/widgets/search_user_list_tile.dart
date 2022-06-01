@@ -4,29 +4,7 @@ import 'package:messenger/helper/shared_prefs_helper.dart';
 import 'package:messenger/services/database.dart';
 import 'package:messenger/views/chat_screen.dart';
 
-getChatRoomIdByUserNames(String me, String you) {
-  if (me == you) {
-    return '';
-  } else if (me.substring(0, 1).codeUnitAt(0) >
-      you.substring(0, 1).codeUnitAt(0)) {
-    // ignore: unnecessary_string_escapes
-    return '$me\_$you';
-  } else {
-    // ignore: unnecessary_string_escapes
-    return '$you\_$me';
-  }
-}
-
-String? myName, myProfilePic, myUserName, myEmail;
-
-getMyInfoFromSharedPreferences() async {
-  myName = await SharedPreferencesHelper().getDisplayName();
-  myEmail = await SharedPreferencesHelper().getUserEmail();
-  myUserName = await SharedPreferencesHelper().getUserName();
-  myProfilePic = await SharedPreferencesHelper().getUserProfileUrl();
-}
-
-class SearchUserListTile extends StatelessWidget {
+class SearchUserListTile extends StatefulWidget {
   const SearchUserListTile({
     Key? key,
     required this.profileUrl,
@@ -38,13 +16,50 @@ class SearchUserListTile extends StatelessWidget {
   final String profileUrl, name, email, username;
 
   @override
+  State<SearchUserListTile> createState() => _SearchUserListTileState();
+}
+
+class _SearchUserListTileState extends State<SearchUserListTile> {
+  getChatRoomIdByUserNames(String me, String you) {
+    if (me == you) {
+      return '';
+    } else if (me.substring(0, 1).codeUnitAt(0) >
+        you.substring(0, 1).codeUnitAt(0)) {
+      // ignore: unnecessary_string_escapes
+      return '$me\_$you';
+    } else {
+      // ignore: unnecessary_string_escapes
+      return '$you\_$me';
+    }
+  }
+
+  String? myName, myProfilePic, myUserName, myEmail;
+
+  getMyInfoFromSharedPreferences() async {
+    myName = await SharedPreferencesHelper().getDisplayName();
+    myEmail = await SharedPreferencesHelper().getUserEmail();
+    myUserName = await SharedPreferencesHelper().getUserName();
+    myProfilePic = await SharedPreferencesHelper().getUserProfileUrl();
+  }
+
+  loadOnLaunch() async {
+    await getMyInfoFromSharedPreferences();
+  }
+
+  @override
+  void initState() {
+    loadOnLaunch();
+    super.initState();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return ListTile(
       onTap: () {
-        var chatRoomId = getChatRoomIdByUserNames(myUserName!, username);
+        var chatRoomId = getChatRoomIdByUserNames(myUserName!, widget.username);
 
         Map<String, dynamic> chatRoomInfoMap = {
-          'users': [myUserName, username],
+          'users': [myUserName, widget.username],
         };
 
         DatabaseMethods().createChatRoom(chatRoomId, chatRoomInfoMap);
@@ -52,17 +67,17 @@ class SearchUserListTile extends StatelessWidget {
         Navigator.of(context).push(
           MaterialPageRoute(
             builder: (context) => ChatScreen(
-              name: name,
-              username: username,
+              name: widget.name,
+              username: widget.username,
             ),
           ),
         );
       },
       leading: CircleAvatar(
-        backgroundImage: NetworkImage(profileUrl),
+        backgroundImage: NetworkImage(widget.profileUrl),
       ),
-      title: Text(name),
-      subtitle: Text(email),
+      title: Text(widget.name),
+      subtitle: Text(widget.email),
     );
   }
 }

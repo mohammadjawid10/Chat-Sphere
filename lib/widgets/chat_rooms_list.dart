@@ -1,8 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:messenger/helper/shared_prefs_helper.dart';
 import 'package:messenger/services/database.dart';
 import 'package:messenger/widgets/chat_room_list_tile.dart';
-import 'package:messenger/widgets/search_user_list_tile.dart';
 
 Stream? chatRoomStream;
 
@@ -15,11 +15,18 @@ class ChatRoomsList extends StatefulWidget {
 
 class _ChatRoomsListState extends State<ChatRoomsList> {
 
+  String? myUserName;
+
   getChatRooms() async {
     chatRoomStream = await DatabaseMethods().getChatRooms();
   }
 
+  getMyInfoFromSharedPreferences() async {
+    myUserName = await SharedPreferencesHelper().getUserName();
+  }
+
   loadOnLaunch() async {
+    await getMyInfoFromSharedPreferences();
     await getChatRooms();
   }
 
