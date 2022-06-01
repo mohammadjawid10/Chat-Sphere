@@ -14,7 +14,6 @@ class ChatRoomsList extends StatefulWidget {
 }
 
 class _ChatRoomsListState extends State<ChatRoomsList> {
-
   String? myUserName;
 
   getChatRooms() async {
@@ -28,6 +27,7 @@ class _ChatRoomsListState extends State<ChatRoomsList> {
   loadOnLaunch() async {
     await getMyInfoFromSharedPreferences();
     await getChatRooms();
+    setState(() {});
   }
 
   @override
@@ -55,8 +55,10 @@ class _ChatRoomsListState extends State<ChatRoomsList> {
             },
           );
         }
-        return const Center(
-          child: CircularProgressIndicator(),
+        return Center(
+          child: CircularProgressIndicator(
+            color: Colors.green[700],
+          ),
         );
       },
     );

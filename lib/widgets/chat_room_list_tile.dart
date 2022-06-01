@@ -89,7 +89,7 @@ class _ChatRoomListTileState extends State<ChatRoomListTile> {
         );
       },
       leading: CircleAvatar(
-        backgroundImage: NetworkImage(profilePicUrl),
+        backgroundImage: profilePicUrl.isNotEmpty ? NetworkImage(profilePicUrl) : const NetworkImage('http://picsum.photos/seed/1/300/300'),
       ),
       title: Text(name),
       subtitle: Text(widget.lastMessage),

@@ -64,7 +64,7 @@ class DatabaseMethods {
         .collection('chatrooms')
         .doc(chatRoomId)
         .collection('chats')
-        // .orderBy('lastMessageSendTs', descending: true)
+        .orderBy('timestamp', descending: true)
         .snapshots();
   }
 
