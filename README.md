@@ -1,6 +1,5 @@
-# messenger
-
-A new Flutter project.
+# Chat Sphere
+A modern chat app build with Flutter and Firebase with high capabilities every chat app needs.
 
 ## Getting Started
 
