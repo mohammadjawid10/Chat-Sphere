@@ -69,7 +69,7 @@ class _ChatMessagesState extends State<ChatMessages> {
             itemCount: snapshot.data.docs.length,
             itemBuilder: (context, index) {
               DocumentSnapshot ds = snapshot.data.docs[index];
-              return messageTile(ds['message'], myUserName == ds['sender']);
+              return MessageTile(ds['message'], myUserName == ds['sender']);
             },
           );
         } else {

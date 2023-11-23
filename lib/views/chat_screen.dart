@@ -34,8 +34,7 @@ class _ChatScreenState extends State<ChatScreen> {
   String? myEmail;
 
   getChatRoomIdByUserNames(String me, String you) {
-    if (me.substring(0, 1).codeUnitAt(0) >
-        you.substring(0, 1).codeUnitAt(0)) {
+    if (me.substring(0, 1).codeUnitAt(0) > you.substring(0, 1).codeUnitAt(0)) {
       // ignore: unnecessary_string_escapes
       log('$me\_$you  -- Chat Screen');
       // ignore: unnecessary_string_escapes
@@ -59,8 +58,10 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 
   addMessage(bool sendClicked) {
-    if (_messageController.text.isNotEmpty) {
-      String message = _messageController.text;
+    if (_messageController.text.trim().isNotEmpty) {
+      String message = _messageController.text.trim().isEmpty
+          ? 'Empty String'
+          : _messageController.text.trim();
 
       var lastMessageTs = DateTime.now();
 
@@ -76,25 +77,26 @@ class _ChatScreenState extends State<ChatScreen> {
         messageId = randomAlphaNumeric(12);
       }
 
-      DatabaseMethods()
-          .addMessage(chatRoomId, messageId, messageInfoMap)
-          .then((value) {
-        Map<String, dynamic> lastMessageInfoMap = {
-          'lastMessage': message,
-          'lastMessageSendTs': lastMessageTs,
-          'lastMessageSender': myUserName,
-        };
+      DatabaseMethods().addMessage(chatRoomId, messageId, messageInfoMap).then(
+        (value) {
+          Map<String, dynamic> lastMessageInfoMap = {
+            'lastMessage': message,
+            'lastMessageSendTs': lastMessageTs,
+            'lastMessageSender': myUserName,
+          };
 
-        DatabaseMethods().updateLastMessageSend(chatRoomId, lastMessageInfoMap);
+          DatabaseMethods()
+              .updateLastMessageSend(chatRoomId, lastMessageInfoMap);
 
-        if (sendClicked) {
-          // if you have clicked the send method then clean the text field
-          _messageController.text = '';
+          if (sendClicked) {
+            // if you have clicked the send method then clean the text field
+            _messageController.text = '';
 
-          // reset message id to get regenerated on the next message
-          messageId = '';
-        }
-      });
+            // reset message id to get regenerated on the next message
+            messageId = '';
+          }
+        },
+      );
     }
   }
 

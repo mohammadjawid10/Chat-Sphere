@@ -8,22 +8,23 @@ import 'package:messenger/views/home.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class AuthMethods {
-  final FirebaseAuth auth = FirebaseAuth.instance;
+  final FirebaseAuth _firebaseAuth = FirebaseAuth.instance;
+  final GoogleSignIn _googleSignIn = GoogleSignIn();
 
   Future getCurrentUser() async {
-    return auth.currentUser;
+    return _firebaseAuth.currentUser;
   }
 
   Future signOut(BuildContext context) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    prefs.clear();
-    await auth.signOut();
+    await prefs.clear();
+    await _firebaseAuth.signOut();
+    await _googleSignIn.signOut();
   }
 
-
   signInWithGoogle(BuildContext context) async {
-    final FirebaseAuth _firebaseAuth = FirebaseAuth.instance;
-    final GoogleSignIn _googleSignIn = GoogleSignIn();
+    // final FirebaseAuth _firebaseAuth = FirebaseAuth.instance;
+    // final GoogleSignIn _googleSignIn = GoogleSignIn();
 
     final GoogleSignInAccount? _googleSignInAccount =
         await _googleSignIn.signIn();
@@ -42,7 +43,8 @@ class AuthMethods {
 
     SharedPreferencesHelper().saveUserId(user.uid);
     SharedPreferencesHelper().saveUserEmail(user.email!);
-    SharedPreferencesHelper().saveUserName(user.email!.replaceAll('@gmail.com', ''));
+    SharedPreferencesHelper()
+        .saveUserName(user.email!.replaceAll('@gmail.com', ''));
     SharedPreferencesHelper().saveDisplayName(user.displayName!);
     SharedPreferencesHelper().saveUserProfileUrl(user.photoURL!);
 

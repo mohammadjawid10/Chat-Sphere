@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:messenger/helper/shared_prefs_helper.dart';
@@ -24,7 +26,7 @@ class _ChatRoomsListState extends State<ChatRoomsList> {
     myUserName = await SharedPreferencesHelper().getUserName();
   }
 
-  loadOnLaunch() async {
+  Future loadOnLaunch() async {
     await getMyInfoFromSharedPreferences();
     await getChatRooms();
     setState(() {});
@@ -34,10 +36,12 @@ class _ChatRoomsListState extends State<ChatRoomsList> {
   void initState() {
     loadOnLaunch();
     super.initState();
+    log('myUserName: $myUserName -- initState');
   }
 
   @override
   Widget build(BuildContext context) {
+    log('myUserName: $myUserName');
     return StreamBuilder(
       stream: chatRoomStream,
       builder: (context, AsyncSnapshot snapshot) {
